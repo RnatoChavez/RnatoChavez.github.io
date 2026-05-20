@@ -1,0 +1,240 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Renato Chávez | Ingeniería Eléctrica & ITSE</title>
+<style>
+  *{margin:0;padding:0;box-sizing:border-box}
+  body{font-family:Arial,Helvetica,sans-serif;color:#fff;background:#0a0f1e;line-height:1.6}
+  .container{max-width:1100px;margin:0 auto;padding:0 20px}
+  
+  /* Hero */
+  .hero{background:linear-gradient(135deg,#0c1e3d 0%,#001a2e 100%);padding:100px 0 80px;text-align:center;position:relative}
+  .hero::after{content:'';position:absolute;bottom:0;left:0;right:0;height:4px;background:linear-gradient(90deg,#FFD700,#FFA500,#FFD700)}
+  .hero h1{font-size:2.5rem;color:#FFD700;margin-bottom:10px}
+  .hero .tagline{font-size:1.2rem;color:#ccc;margin-bottom:30px}
+  .hero .cta{display:inline-block;background:#25D366;color:#fff;padding:15px 40px;border-radius:50px;text-decoration:none;font-size:1.1rem;font-weight:bold;transition:transform .2s}
+  .hero .cta:hover{transform:scale(1.05)}
+  
+  /* Nav */
+  nav{background:rgba(12,30,61,.95);padding:15px 0;position:sticky;top:0;z-index:100;backdrop-filter:blur(10px)}
+  nav .container{display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap}
+  nav .logo{color:#FFD700;font-weight:bold;font-size:1.2rem}
+  nav a{color:#ccc;text-decoration:none;margin-left:25px;font-size:.95rem;transition:color .2s}
+  nav a:hover{color:#FFD700}
+  
+  /* Sections */
+  section{padding:80px 0}
+  section h2{font-size:2rem;color:#FFD700;text-align:center;margin-bottom:50px;position:relative}
+  section h2::after{content:'';display:block;width:60px;height:3px;background:#FFD700;margin:15px auto 0}
+  
+  /* Servicios */
+  .servicios-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:30px}
+  .servicio-card{background:linear-gradient(135deg,#101840,#0c1e3d);border-radius:15px;padding:35px 25px;text-align:center;border:1px solid rgba(255,215,0,.15);transition:transform .2s,border .2s}
+  .servicio-card:hover{transform:translateY(-5px);border-color:#FFD700}
+  .servicio-card .icon{font-size:3rem;margin-bottom:20px}
+  .servicio-card h3{color:#FFD700;margin-bottom:15px;font-size:1.3rem}
+  .servicio-card p{color:#bbb;font-size:.95rem}
+  
+  /* Sobre mí */
+  .about{background:#0c1e3d}
+  .about-content{display:flex;gap:50px;align-items:center;flex-wrap:wrap}
+  .about-text{flex:1;min-width:300px}
+  .about-text h3{color:#FFD700;font-size:1.5rem;margin-bottom:20px}
+  .about-text p{color:#ccc;margin-bottom:15px;font-size:1.05rem}
+  .about-badge{background:rgba(255,215,0,.1);border:1px solid #FFD700;border-radius:10px;padding:20px;text-align:center}
+  .about-badge .cip{font-size:2.5rem;color:#FFD700;font-weight:bold}
+  .about-badge span{display:block;color:#aaa;font-size:.9rem}
+  
+  /* Proyectos */
+  .proyectos{background:#0a0f1e}
+  .proyectos-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:25px}
+  .proyecto-card{background:#101840;border-radius:12px;overflow:hidden;border:1px solid rgba(255,255,255,.05)}
+  .proyecto-card .card-img{height:200px;background:linear-gradient(135deg,#0c1e3d,#1a3050);display:flex;align-items:center;justify-content:center;font-size:3rem}
+  .proyecto-card .card-content{padding:20px}
+  .proyecto-card h4{color:#FFD700;margin-bottom:8px}
+  .proyecto-card p{color:#aaa;font-size:.9rem}
+  .proyecto-card .tag{display:inline-block;background:rgba(255,215,0,.2);color:#FFD700;padding:3px 12px;border-radius:15px;font-size:.8rem;margin-top:10px}
+  
+  /* Contacto */
+  .contacto{background:#0c1e3d;text-align:center}
+  .contacto p{color:#ccc;font-size:1.1rem;margin-bottom:30px}
+  .contact-btn{display:inline-block;background:#25D366;color:#fff;padding:15px 40px;border-radius:50px;text-decoration:none;font-size:1.1rem;font-weight:bold;transition:transform .2s}
+  .contact-btn:hover{transform:scale(1.05)}
+  .contact-info{margin-top:30px;color:#999}
+  
+  /* Footer */
+  footer{background:#060c1a;padding:25px 0;text-align:center;color:#666;font-size:.9rem}
+  
+  /* Responsive */
+  @media (max-width:768px){
+    nav .container{flex-direction:column;gap:10px}
+    nav a{margin:0 10px}
+    .hero h1{font-size:1.8rem}
+    .about-content{flex-direction:column}
+    .hero{padding:60px 0 50px}
+  }
+</style>
+</head>
+<body>
+
+<!-- Navigation -->
+<nav>
+  <div class="container">
+    <div class="logo">⚡ RENATO CHÁVEZ</div>
+    <div>
+      <a href="#servicios">Servicios</a>
+      <a href="#sobre-mi">Sobre mí</a>
+      <a href="#proyectos">Proyectos</a>
+      <a href="#contacto">Contacto</a>
+    </div>
+  </div>
+</nav>
+
+<!-- Hero -->
+<header class="hero">
+  <div class="container">
+    <h1>Ingeniería Eléctrica Profesional</h1>
+    <p class="tagline">Certificados ITSE · Inspecciones · Instalaciones · Proyectos</p>
+    <a href="#contacto" class="cta">📲 Escríbeme al WhatsApp</a>
+  </div>
+</header>
+
+<!-- Servicios -->
+<section id="servicios">
+  <div class="container">
+    <h2>Servicios</h2>
+    <div class="servicios-grid">
+      <div class="servicio-card">
+        <div class="icon">📋</div>
+        <h3>Certificado ITSE</h3>
+        <p>Inspección técnica de seguridad en edificaciones. Certificado válido para tu licencia de funcionamiento. Entrega en 48 horas.</p>
+      </div>
+      <div class="servicio-card">
+        <div class="icon">⚡</div>
+        <h3>Diseño Eléctrico</h3>
+        <p>Planos, memorias de cálculo, diagramas unifilares. Proyectos residenciales, comerciales e industriales.</p>
+      </div>
+      <div class="servicio-card">
+        <div class="icon">🔥</div>
+        <h3>Instalaciones de GLP</h3>
+        <p>Certificación de gas licuado de petróleo. Cumplimiento de normas técnicas peruanas.</p>
+      </div>
+      <div class="servicio-card">
+        <div class="icon">🏗️</div>
+        <h3>SPAT / INDECI</h3>
+        <p>Sistema de protección contra descargas atmosféricas. Levantamiento de observaciones de Defensa Civil.</p>
+      </div>
+      <div class="servicio-card">
+        <div class="icon">🌍</div>
+        <h3>Pozo a Tierra</h3>
+        <p>Mediciones con telurómetro certificado. Instalación y mantenimiento de sistemas de puesta a tierra.</p>
+      </div>
+      <div class="servicio-card">
+        <div class="icon">🏠</div>
+        <h3>Proyectos Llave en Mano</h3>
+        <p>Arquitectura + Ingeniería. Con mi socia arquitecta cubrimos todo el proyecto desde el diseño hasta la entrega.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- Sobre mí -->
+<section id="sobre-mi" class="about">
+  <div class="container">
+    <h2>Sobre Mí</h2>
+    <div class="about-content">
+      <div class="about-text">
+        <h3>Ing. Renato Chávez Cajahuanca</h3>
+        <p>Ingeniero Mecánico Electricista con amplia experiencia en instalaciones eléctricas, certificaciones ITSE y SPAT en Lima.</p>
+        <p>He trabajado con constructoras, locales comerciales, edificios y departamentos en Miraflores, San Isidro, Chilca y toda Lima Metropolitana.</p>
+        <p>Mi compromiso: profesionalismo, puntualidad y resultados que aprueban a la primera.</p>
+      </div>
+      <div class="about-badge">
+        <div class="cip">CIP 92116</div>
+        <span>Colegio de Ingenieros del Perú</span>
+        <div style="margin-top:15px;font-size:.9rem;color:#FFD700">Equipos certificados y calibrados</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- Proyectos -->
+<section id="proyectos" class="proyectos">
+  <div class="container">
+    <h2>Proyectos Recientes</h2>
+    <div class="proyectos-grid">
+      <div class="proyecto-card">
+        <div class="card-img">🏢</div>
+        <div class="card-content">
+          <h4>Edificio Grant — Miraflores</h4>
+          <p>Inspección ITSE de instalaciones eléctricas para departamento 105.</p>
+          <span class="tag">ITSE</span>
+        </div>
+      </div>
+      <div class="proyecto-card">
+        <div class="card-img">🏪</div>
+        <div class="card-content">
+          <h4>Inspección GLP — Local Comercial</h4>
+          <p>Certificación de instalación de gas para cocina y freidoras. Lima 2022.</p>
+          <span class="tag">GLP</span>
+        </div>
+      </div>
+      <div class="proyecto-card">
+        <div class="card-img">⚡</div>
+        <div class="card-content">
+          <h4>TPM Miraflores</h4>
+          <p>Puesta en servicio de subestación eléctrica. Proyecto de media tensión.</p>
+          <span class="tag">Media Tensión</span>
+        </div>
+      </div>
+      <div class="proyecto-card">
+        <div class="card-img">🏠</div>
+        <div class="card-content">
+          <h4>Edificio Mayra — Miraflores</h4>
+          <p>Certificación ITSE completa. Observaciones levantadas y aprobadas.</p>
+          <span class="tag">ITSE</span>
+        </div>
+      </div>
+      <div class="proyecto-card">
+        <div class="card-img">🔧</div>
+        <div class="card-content">
+          <h4>Pozo a Tierra Certificado</h4>
+          <p>Medición con telurómetro calibrado. Instalación y certificación.</p>
+          <span class="tag">Puesta a Tierra</span>
+        </div>
+      </div>
+      <div class="proyecto-card">
+        <div class="card-img">🏭</div>
+        <div class="card-content">
+          <h4>Locales Comerciales e Industrias</h4>
+          <p>Certificaciones ITSE para diversos locales y pequeñas industrias en Lima.</p>
+          <span class="tag">ITSE</span>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- Contacto -->
+<section id="contacto" class="contacto">
+  <div class="container">
+    <h2>Contacto</h2>
+    <p>¿Necesitás certificado ITSE, inspección eléctrica o un proyecto completo? Escríbeme y te respondo al toque.</p>
+    <a href="https://wa.me/51900000000" class="contact-btn">📲 Escribir al WhatsApp</a>
+    <div class="contact-info">
+      <p>📍 Lima, Perú · ⚡ Respuesta en menos de 1 hora</p>
+    </div>
+  </div>
+</section>
+
+<!-- Footer -->
+<footer>
+  <div class="container">
+    <p>© 2026 Renato Chávez Cajahuanca · CIP 92116 · Ingeniería Eléctrica</p>
+  </div>
+</footer>
+
+</body>
+</html>
