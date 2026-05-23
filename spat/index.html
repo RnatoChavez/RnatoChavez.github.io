@@ -1,0 +1,684 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Protocolo SPAT — Sistema de Puesta a Tierra</title>
+<script src="https://cdn.sheetjs.com/xlsx-0.20.1/package/dist/xlsx.full.min.js"></script>
+<style>
+:root { --bg:#f5f5f5; --card:#fff; --border:#e0e0e0; --text:#1a1a1a; --muted:#666; --accent:#1a56db; --accent-hover:#1e40af; --danger:#dc2626; --success:#16a34a; --radius:8px; }
+* { box-sizing:border-box; margin:0; padding:0; }
+body { font-family:'Segoe UI',system-ui,-apple-system,sans-serif; background:var(--bg); color:var(--text); line-height:1.5; padding:20px; }
+.container { max-width:1200px; margin:0 auto; }
+
+.header { background:var(--card); border:1px solid var(--border); border-radius:var(--radius); padding:20px 28px; margin-bottom:20px; display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:12px; }
+.header h1 { font-size:1.4rem; font-weight:700; }
+.header .badge { background:#dbeafe; color:var(--accent); padding:4px 12px; border-radius:20px; font-size:.8rem; font-weight:600; }
+.engineer-info { font-size:.85rem; color:var(--muted); text-align:right; line-height:1.6; }
+.engineer-info strong { color:var(--text); }
+
+.card { background:var(--card); border:1px solid var(--border); border-radius:var(--radius); padding:20px 28px; margin-bottom:20px; }
+.card h2 { font-size:1.1rem; font-weight:600; margin-bottom:14px; padding-bottom:8px; border-bottom:2px solid var(--accent); display:flex; align-items:center; gap:8px; }
+.card h2 .num { background:var(--accent); color:#fff; width:26px; height:26px; border-radius:50%; display:inline-flex; align-items:center; justify-content:center; font-size:.8rem; }
+
+.form-grid { display:grid; grid-template-columns:1fr 1fr; gap:14px; }
+.form-group { display:flex; flex-direction:column; }
+.form-group.full { grid-column:1/-1; }
+.form-group label { font-size:.8rem; font-weight:600; color:var(--muted); margin-bottom:4px; text-transform:uppercase; letter-spacing:.5px; }
+.form-group input,.form-group select,.form-group textarea { padding:9px 12px; border:1px solid var(--border); border-radius:6px; font-size:.9rem; font-family:inherit; transition:border-color .2s; }
+.form-group input:focus,.form-group select:focus,.form-group textarea:focus { outline:none; border-color:var(--accent); box-shadow:0 0 0 3px rgba(26,86,219,.1); }
+.form-group textarea { resize:vertical; min-height:65px; }
+
+.counter-row { display:flex; gap:6px; align-items:center; }
+.counter-row button { width:34px; height:36px; border:1px solid var(--border); border-radius:6px; background:#fff; cursor:pointer; font-size:1.1rem; font-weight:700; }
+.counter-row input { flex:1; text-align:center; font-size:1.05rem; font-weight:700; }
+
+.tech-toggle { display:flex; align-items:center; gap:8px; cursor:pointer; color:var(--accent); font-weight:600; font-size:.9rem; margin-top:14px; padding:8px 0; user-select:none; }
+.tech-toggle:hover { color:var(--accent-hover); }
+.tech-toggle .arrow { transition:transform .2s; }
+.tech-toggle.open .arrow { transform:rotate(90deg); }
+.tech-fields { display:none; }
+.tech-fields.show { display:grid; }
+
+.btn-row { display:flex; gap:10px; margin-top:18px; flex-wrap:wrap; }
+.btn { padding:9px 20px; border:none; border-radius:6px; font-size:.85rem; font-weight:600; cursor:pointer; transition:all .2s; font-family:inherit; }
+.btn-primary { background:var(--accent); color:#fff; }
+.btn-primary:hover { background:var(--accent-hover); }
+.btn-secondary { background:#e5e7eb; color:var(--text); }
+.btn-secondary:hover { background:#d1d5db; }
+.btn-success { background:var(--success); color:#fff; }
+.btn-success:hover { background:#15803d; }
+.btn-danger { background:var(--danger); color:#fff; }
+.btn-danger:hover { background:#b91c1c; }
+.btn-sm { padding:4px 10px; font-size:.75rem; }
+
+/* Records table */
+.records-header { display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:10px; margin-bottom:12px; }
+.records-count { font-size:.85rem; color:var(--muted); }
+table { width:100%; border-collapse:collapse; font-size:.82rem; }
+th, td { padding:8px 10px; text-align:left; border-bottom:1px solid var(--border); }
+th { background:#f8fafc; font-weight:600; font-size:.75rem; color:var(--muted); text-transform:uppercase; white-space:nowrap; }
+tr:hover td { background:#f8fafc; }
+td.actions { white-space:nowrap; text-align:center; }
+.empty-state { text-align:center; padding:40px; color:var(--muted); }
+
+/* Preview modal */
+.modal-overlay { display:none; position:fixed; inset:0; background:rgba(0,0,0,.5); z-index:100; justify-content:center; align-items:flex-start; padding:20px; overflow-y:auto; }
+.modal-overlay.show { display:flex; }
+.modal-content { background:#fff; border-radius:var(--radius); max-width:800px; width:100%; margin:20px auto; padding:0; box-shadow:0 20px 60px rgba(0,0,0,.2); }
+.modal-header { display:flex; justify-content:space-between; align-items:center; padding:16px 24px; border-bottom:1px solid var(--border); }
+.modal-header h3 { font-size:1rem; }
+.modal-body { padding:30px 40px; }
+.modal-footer { padding:12px 24px; border-top:1px solid var(--border); display:flex; gap:8px; justify-content:flex-end; }
+
+/* Certificate styles */
+.cert { font-family:'Times New Roman',serif; color:#000; max-width:720px; margin:0 auto; }
+.cert-header { text-align:center; margin-bottom:8px; }
+.cert-header .eng-name { font-size:13pt; font-weight:bold; }
+.cert-header .eng-title { font-size:10pt; }
+.cert-header .cip { font-size:10pt; font-weight:bold; }
+.cert-project { text-align:right; font-size:9pt; margin-bottom:5px; }
+.cert-num { text-align:center; font-size:11pt; font-weight:bold; margin:8px 0; }
+.cert-title { text-align:center; font-size:12pt; font-weight:bold; margin:12px 0; }
+.cert-intro { text-align:justify; font-size:10pt; margin:10px 0; line-height:1.4; }
+.cert-section-title { font-weight:bold; font-size:11pt; margin:14px 0 6px 0; }
+.cert-field { margin:2px 0 2px 20px; font-size:10pt; }
+.cert-field .flabel { font-weight:bold; }
+.cert-vigencia { margin:10px 0; font-size:9pt; text-align:justify; }
+.cert-table { width:100%; border-collapse:collapse; margin:10px 0; font-size:9pt; }
+.cert-table th,.cert-table td { border:1px solid #000; padding:4px 6px; text-align:center; }
+.cert-table th { background:#f0f0f0; font-size:8pt; }
+.cert-report { font-size:10pt; margin:10px 0 4px 20px; }
+.cert-footer { margin-top:24px; font-size:8pt; text-align:center; border-top:1px solid #ccc; padding-top:10px; }
+.cert-signature { text-align:center; margin-top:30px; }
+.cert-signature .line { border-top:1px solid #000; width:250px; margin:0 auto 4px; }
+.cert-signature .sig-name { font-weight:bold; font-size:10pt; }
+.cert-signature .sig-cip { font-size:9pt; }
+.cert-anexo { font-size:8pt; margin-top:16px; }
+
+@media print {
+  body { background:#fff; padding:0; }
+  .container { max-width:100%; }
+  .header,.card:not(.print-card),.btn-row,.records-header,table:not(.cert-table),.modal-overlay { display:none!important; }
+  .print-card { border:none; padding:0; margin:0; box-shadow:none; }
+}
+
+@media (max-width:768px) {
+  .form-grid { grid-template-columns:1fr; }
+  .header { flex-direction:column; text-align:center; }
+  .engineer-info { text-align:center; }
+  th, td { padding:6px; font-size:.72rem; }
+}
+</style>
+</head>
+<body>
+<div class="container">
+
+  <!-- Header -->
+  <div class="header">
+    <div>
+      <h1>⚡ Protocolo SPAT</h1>
+      <span class="badge">Sistema de Puesta a Tierra</span>
+    </div>
+    <div class="engineer-info">
+      <strong>Ing. Renato Chávez Cajahuanca</strong><br>
+      Ing° Mecánico Electricista<br>
+      CIP. N° 92116
+    </div>
+  </div>
+
+  <!-- Form -->
+  <div class="card" id="formCard">
+    <h2><span class="num">1</span> Nuevo Registro <span style="font-weight:400;font-size:.8rem;color:var(--muted);margin-left:8px" id="editLabel"></span></h2>
+    <div class="form-grid">
+      <div class="form-group">
+        <label>N° (Registro)</label>
+        <div class="counter-row">
+          <button type="button" onclick="ajustarContador(-1)">−</button>
+          <input type="number" id="fA" placeholder="Auto" min="1">
+          <button type="button" onclick="ajustarContador(1)">+</button>
+        </div>
+        <div style="font-size:.7rem;color:var(--muted);margin-top:2px">Próximo: <strong id="nextCounter" style="color:var(--accent)">—</strong></div>
+      </div>
+      <div class="form-group">
+        <label>Fecha (dd/mm/aaaa)</label>
+        <input type="date" id="fH">
+      </div>
+      <div class="form-group">
+        <label>Empresa / Persona</label>
+        <input type="text" id="fB" placeholder="Razón social o nombre">
+      </div>
+      <div class="form-group">
+        <label>RUC / DNI</label>
+        <input type="text" id="fC" placeholder="10441778622">
+      </div>
+      <div class="form-group">
+        <label>Giro / Actividad Comercial</label>
+        <input type="text" id="fD" placeholder="Ej: BODEGA, RESTAURANTE...">
+      </div>
+      <div class="form-group">
+        <label>Distrito</label>
+        <select id="fF">
+          <option value="">Seleccionar...</option>
+          <option>COMAS</option><option>LOS OLIVOS</option><option>SAN MARTIN DE PORRES</option>
+          <option>INDEPENDENCIA</option><option>SAN ISIDRO</option><option>MIRAFLORES</option>
+          <option>CARABAYLLO</option><option>LA VICTORIA</option><option>SAN BORJA</option>
+          <option>ATE</option><option>SAN JUAN DE LURIGANCHO</option><option>SANTA ANITA</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label>Prueba Realizada</label>
+        <input type="text" id="fG" value="CNE-U 060-712">
+      </div>
+      <div class="form-group full">
+        <label>Ubicación</label>
+        <textarea id="fE" placeholder="Dirección completa del establecimiento"></textarea>
+      </div>
+    </div>
+
+    <div class="tech-toggle" onclick="toggleTech()">
+      <span class="arrow">▶</span> Datos técnicos del pozo (click para editar)
+    </div>
+    <div class="form-grid tech-fields" id="techFields">
+      <div class="form-group"><label>Equipo</label><select id="fK"><option>TELUROMETRO</option><option>MEGÓHMETRO</option></select></div>
+      <div class="form-group"><label>Marca</label><select id="fL"><option>SANWA</option><option>UNI-T [ UT522 ]</option><option>KYORITSU</option></select></div>
+      <div class="form-group"><label>Modelo</label><select id="fM"><option>PDR4000</option><option>DIGITAL EARTH TESTER</option><option>4105A</option></select></div>
+      <div class="form-group"><label>Serie</label><input type="text" id="fN" value="21125302497"></div>
+      <div class="form-group"><label>Número de Pozo</label><input type="text" id="fP" value="SPAT 1 de 1"></div>
+      <div class="form-group"><label>Conexión</label><select id="fR"><option>Al tablero general</option><option>Al tablero eléctrico</option></select></div>
+      <div class="form-group"><label>Tipo de Pozo</label><select id="fS"><option>Vertical</option><option>Horizontal</option></select></div>
+      <div class="form-group"><label>Dosis</label><input type="text" id="fT" value="Thorgel"></div>
+      <div class="form-group"><label>Barra de Cobre</label><input type="text" id="fU" value='L=2,4 m y ø 3/4" de Cu'></div>
+      <div class="form-group"><label>Cable</label><select id="fV"><option>10 mm²</option><option>4 mm²</option><option>2.5 mm²</option></select></div>
+      <div class="form-group"><label>Caja de Registro</label><select id="fW"><option>concreto</option><option>polipropileno</option></select></div>
+      <div class="form-group"><label>Dimensión Caja</label><input type="text" id="fX" value="0.40x0.40 m"></div>
+      <div class="form-group"><label>Ubicación del Pozo</label><input type="text" id="fQ" value="Al interior del local, en el 1er nivel"></div>
+      <div class="form-group"><label>Valor Ohms (Ω)</label><input type="number" id="fY" placeholder="Ej: 9.1" step="0.01" min="0"></div>
+    </div>
+
+    <div class="btn-row">
+      <button class="btn btn-primary" onclick="guardarRegistro()">💾 Guardar Registro</button>
+      <button class="btn btn-secondary" onclick="cancelarEdicion()" id="btnCancel" style="display:none">Cancelar edición</button>
+      <button class="btn btn-secondary" onclick="limpiarForm()">🗑️ Limpiar formulario</button>
+    </div>
+  </div>
+
+  <!-- Records Table -->
+  <div class="card">
+    <div class="records-header">
+      <h2 style="border:none;margin:0;padding:0"><span class="num">2</span> Registros Guardados</h2>
+      <div style="display:flex;gap:8px;align-items:center">
+        <span class="records-count" id="recordsCount">0 registros</span>
+        <button class="btn btn-secondary btn-sm" onclick="descargarExcelTodo()" id="btnDownloadAll" disabled>📊 Descargar Todos</button>
+        <button class="btn btn-danger btn-sm" onclick="borrarTodo()" id="btnDeleteAll" disabled>🗑️ Borrar Todo</button>
+      </div>
+    </div>
+    <div id="recordsTable"></div>
+  </div>
+
+</div>
+
+<!-- Certificate Preview Modal -->
+<div class="modal-overlay" id="certModal">
+  <div class="modal-content">
+    <div class="modal-header">
+      <h3>📄 Certificado</h3>
+      <button class="btn btn-secondary btn-sm" onclick="cerrarModal()">✕</button>
+    </div>
+    <div class="modal-body" id="certModalBody"></div>
+    <div class="modal-footer">
+      <button class="btn btn-primary btn-sm" onclick="imprimirCertificado()">🖨️ Imprimir / PDF</button>
+      <button class="btn btn-secondary btn-sm" onclick="cerrarModal()">Cerrar</button>
+    </div>
+  </div>
+</div>
+
+<script>
+// ==================== STORAGE ====================
+const STORE_KEY = '***';
+let registros = [];
+let editandoIndex = -1;
+
+function cargarRegistros() {
+  try {
+    const raw = localStorage.getItem(STORE_KEY);
+    registros = raw ? JSON.parse(raw) : [];
+  } catch(e) { registros = []; }
+}
+
+function guardarRegistros() {
+  localStorage.setItem(STORE_KEY, JSON.stringify(registros));
+  renderTabla();
+}
+
+// ==================== COUNTER ====================
+function getCounter() {
+  if (registros.length === 0) return 1;
+  const maxN = Math.max(...registros.map(r => parseInt(r.A) || 0));
+  return maxN + 1;
+}
+
+function actualizarDisplayContador() {
+  const next = getCounter();
+  $$('nextCounter').textContent = next;
+  if (editandoIndex === -1 && (!$$('fA').value || $$('fA').dataset.auto === 'true')) {
+    $$('fA').value = next;
+    $$('fA').dataset.auto = 'true';
+  }
+}
+
+function ajustarContador(delta) {
+  const actual = parseInt($$('fA').value) || getCounter();
+  $$('fA').value = Math.max(1, actual + delta);
+  $$('fA').dataset.auto = 'false';
+}
+
+// ==================== HELPERS ====================
+function $$(id) { return document.getElementById(id); }
+function val(id) { return $$(id)?.value?.trim() || ''; }
+
+function fmtFecha(iso) {
+  if (!iso) return '';
+  const d = new Date(iso + 'T12:00:00');
+  const meses = ['Enero','Febrero','Marzo','Abril','Mayo','Junio','Julio','Agosto','Septiembre','Octubre','Noviembre','Diciembre'];
+  const dias = ['Domingo','Lunes','Martes','Miércoles','Jueves','Viernes','Sábado'];
+  return `${dias[d.getDay()]} ${d.getDate()}, de ${meses[d.getMonth()]} del ${d.getFullYear()}`;
+}
+
+function fmtFechaFin(iso) {
+  if (!iso) return '';
+  const d = new Date(iso + 'T12:00:00');
+  d.setFullYear(d.getFullYear() + 1);
+  const meses = ['Enero','Febrero','Marzo','Abril','Mayo','Junio','Julio','Agosto','Septiembre','Octubre','Noviembre','Diciembre'];
+  const dias = ['Domingo','Lunes','Martes','Miércoles','Jueves','Viernes','Sábado'];
+  return `${dias[d.getDay()]} ${d.getDate()}, de ${meses[d.getMonth()]} del ${d.getFullYear()}`;
+}
+
+function generarCertNro(nro) {
+  return nro ? `2043-${nro}` : '2043-____';
+}
+
+function cumpleOhms(valor) {
+  const v = parseFloat(valor);
+  if (isNaN(v)) return '—';
+  return v <= 25 ? 'CUMPLE' : 'NO CUMPLE';
+}
+
+function leerFormData() {
+  return {
+    A: val('fA'), B: val('fB'), C: val('fC'), D: val('fD'),
+    E: val('fE'), F: val('fF'), G: val('fG'), H: val('fH'),
+    K: val('fK')||'TELUROMETRO', L: val('fL')||'SANWA', M: val('fM')||'PDR4000',
+    N: val('fN')||'21125302497', P: val('fP')||'SPAT 1 de 1',
+    Q: val('fQ')||'Al interior del local, en el 1er nivel',
+    R: val('fR')||'Al tablero general', S: val('fS')||'Vertical',
+    T: val('fT')||'Thorgel', U: val('fU')||'L=2,4 m y ø 3/4" de Cu',
+    V: val('fV')||'10 mm²', W: val('fW')||'concreto',
+    X: val('fX')||'0.40x0.40 m', Y: val('fY')||''
+  };
+}
+
+function llenarForm(data) {
+  Object.entries(data).forEach(([k,v]) => {
+    const el = $$('f'+k);
+    if (el) el.value = v;
+  });
+  $$('fA').dataset.auto = 'false';
+  $$('techFields').classList.add('show');
+  document.querySelector('.tech-toggle').classList.add('open');
+}
+
+function limpiarForm() {
+  ['fB','fC','fD','fE','fF','fH','fY'].forEach(id => $$(id).value = '');
+  $$('fG').value = 'CNE-U 060-712';
+  $$('fA').value = getCounter();
+  $$('fA').dataset.auto = 'true';
+  editandoIndex = -1;
+  $$('editLabel').textContent = '';
+  $$('btnCancel').style.display = 'none';
+  actualizarDisplayContador();
+}
+
+function cancelarEdicion() {
+  limpiarForm();
+}
+
+function toggleTech() {
+  const fields = $$('techFields');
+  const toggle = document.querySelector('.tech-toggle');
+  fields.classList.toggle('show');
+  toggle.classList.toggle('open');
+}
+
+// ==================== CRUD ====================
+function guardarRegistro() {
+  const data = leerFormData();
+  
+  if (!data.A || !data.B || !data.C || !data.D || !data.E || !data.F || !data.G || !data.H) {
+    alert('⚠️ Complete todos los campos del solicitante (N°, Empresa, RUC/DNI, Giro, Ubicación, Distrito, Prueba y Fecha).');
+    return;
+  }
+  
+  // Validar N° único (si no está editando)
+  if (editandoIndex === -1) {
+    const existe = registros.findIndex(r => r.A === data.A);
+    if (existe !== -1) {
+      alert(`⚠️ El N° ${data.A} ya existe. Use otro número o edite el registro existente.`);
+      return;
+    }
+  }
+  
+  if (editandoIndex >= 0) {
+    registros[editandoIndex] = data;
+    editandoIndex = -1;
+    $$('editLabel').textContent = '';
+    $$('btnCancel').style.display = 'none';
+  } else {
+    registros.push(data);
+  }
+  
+  guardarRegistros();
+  limpiarForm();
+  $$('fA').value = getCounter();
+  $$('fA').dataset.auto = 'true';
+  actualizarDisplayContador();
+}
+
+function editarRegistro(index) {
+  const r = registros[index];
+  llenarForm(r);
+  editandoIndex = index;
+  $$('editLabel').textContent = `(Editando N° ${r.A})`;
+  $$('btnCancel').style.display = '';
+  $$('formCard').scrollIntoView({behavior:'smooth'});
+}
+
+function borrarRegistro(index) {
+  const r = registros[index];
+  if (!confirm(`¿Borrar registro N° ${r.A} — ${r.B}?`)) return;
+  registros.splice(index, 1);
+  guardarRegistros();
+  actualizarDisplayContador();
+}
+
+function borrarTodo() {
+  if (registros.length === 0) return;
+  if (!confirm(`⚠️ ¿Borrar TODOS los ${registros.length} registros? Esta acción no se puede deshacer.`)) return;
+  registros = [];
+  guardarRegistros();
+  actualizarDisplayContador();
+}
+
+// ==================== CERTIFICATE RENDERING ====================
+function generarHTMLCertificado(data) {
+  const fechaInspeccion = fmtFecha(data.H);
+  const fechaVencimiento = fmtFechaFin(data.H);
+  const certNum = generarCertNro(data.A);
+  const ohmsDisplay = data.Y ? `${data.Y} Ω` : '—';
+  const cumple = cumpleOhms(data.Y);
+  
+  return `
+<div class="cert">
+  <div class="cert-header">
+    <div class="eng-name">RENATO CHAVEZ CAJAHUANCA</div>
+    <div class="eng-title">ING° MECÁNICO ELECTRICISTA</div>
+    <div class="cip">CIP. N° 92116</div>
+  </div>
+  <div class="cert-project">PROYECTO:<br>CERTIFICADO DE<br>INSTALACIONES ELÉCTRICAS</div>
+  <div class="cert-num">Cert-N° ${certNum}</div>
+  <div class="cert-title">PROTOCOLO DE MEDICIÓN DE LA RESISTENCIA<br>DEL POZO A TIERRA</div>
+  
+  <div class="cert-intro">
+    Por medio del presente documento el Ing. Renato Chávez Cajahuanca, 
+    CERTIFICA haber efectuado la inspección técnica y visual con respecto al 
+    mantenimiento del sistema de puesta a tierra del local a solicitud de:
+  </div>
+  
+  <div class="cert-section-title">1.- DATOS GENERALES DEL SOLICITANTE:</div>
+  <div class="cert-field"><span class="flabel">- PROPIETARIO / RAZÓN SOCIAL:</span> ${data.B.toUpperCase()}</div>
+  <div class="cert-field"><span class="flabel">- RUC/DNI:</span> ${data.C}</div>
+  <div class="cert-field"><span class="flabel">- GIRO/ACTIVIDAD:</span> ${data.D.toUpperCase()}</div>
+  <div class="cert-field"><span class="flabel">- UBICACIÓN:</span> ${data.E.toUpperCase()}</div>
+  <div class="cert-field"><span class="flabel">- DISTRITO:</span> ${data.F.toUpperCase()}</div>
+  <div class="cert-field"><span class="flabel">- PRUEBA REALIZADA:</span> ${data.G.toUpperCase()}</div>
+  <div class="cert-field"><span class="flabel">- FECHA DE INSPECCIÓN:</span> ${fechaInspeccion}</div>
+  
+  <div class="cert-vigencia">
+    Este protocolo tiene vigencia de un año a partir de la fecha de medición, después se 
+    recomienda volver a realizar la misma prueba para determinar la medición de la puesta 
+    a tierra y sugerir su mantenimiento respectivo.
+  </div>
+  
+  <table class="cert-table">
+    <tr><td style="width:40%"><strong>Periodo de Vigencia</strong></td><td style="width:30%"><strong>Inicio de Vigencia</strong></td><td style="width:30%"><strong>Fin de Vigencia</strong></td></tr>
+    <tr><td>1 año (365 días)</td><td>${fechaInspeccion}</td><td>${fechaVencimiento}</td></tr>
+  </table>
+  
+  <div class="cert-section-title">2.- DESCRIPCIÓN:</div>
+  <div class="cert-field"><span class="flabel">- Cantidad de sistemas de puesta a tierra:</span> ${data.P}</div>
+  <div class="cert-field"><span class="flabel">- El ${data.P} está conectado:</span> ${data.R}</div>
+  <div class="cert-field"><span class="flabel">- El ${data.P} se encuentra ubicado en:</span> ${data.Q}</div>
+  
+  <table class="cert-table">
+    <tr><th>NÚMERO DE PUESTA A TIERRA</th><th>CARACTERÍSTICAS DE LA VARILLA DE COBRE</th><th>CARACTERÍSTICA CONSTRUCTIVA</th><th>RESISTENCIA PROMEDIO</th></tr>
+    <tr><td>${data.P}</td><td>${data.U}</td><td>${data.S}</td><td>${ohmsDisplay}</td></tr>
+  </table>
+  
+  <div class="cert-section-title">3.- REPORTE DE INSPECCIÓN</div>
+  <div class="cert-report">- El valor de ${ohmsDisplay} <strong>${cumple}</strong> con el RNE-U 060-720.</div>
+  <div class="cert-report">- ${data.Q}.</div>
+  
+  <div class="cert-footer">
+    Oficina en San Isidro: Av. Pablo Carriquiry Maurer N°451 Urbanización: El Palomar<br>
+    Teléfonos Móviles: 929957363 &nbsp;|&nbsp; Correo Electrónico: renato.chavez@gmail.com<br>
+    Cert-N° ${certNum}
+  </div>
+  
+  <div class="cert-signature">
+    <div class="line"></div>
+    <div class="sig-name">ING. RENATO CHAVEZ CAJAHUANCA</div>
+    <div class="sig-cip">ING° MECÁNICO ELECTRICISTA — CIP. N° 92116</div>
+  </div>
+  
+  <div class="cert-anexo">
+    Anexo 01: Certificado de Habilidad Profesional como Ingeniero Mecánico Electricista: Habilitado y Colegiado
+  </div>
+</div>`;
+}
+
+let certActualIndex = -1;
+function verCertificado(index) {
+  certActualIndex = index;
+  $$('certModalBody').innerHTML = generarHTMLCertificado(registros[index]);
+  $$('certModal').classList.add('show');
+}
+
+function cerrarModal() {
+  $$('certModal').classList.remove('show');
+  certActualIndex = -1;
+}
+
+function imprimirCertificado() {
+  if (certActualIndex < 0) return;
+  const w = window.open('','_blank','width=800,height=900');
+  w.document.write(`<!DOCTYPE html><html><head><meta charset="UTF-8"><title>Certificado SPAT</title>
+<style>body{font-family:'Times New Roman',serif;padding:30px 40px;max-width:750px;margin:0 auto}
+${[...document.styleSheets].map(s=>{try{return [...s.cssRules].map(r=>r.cssText).join('\n')}catch(e){return''}}).join('\n')}
+@media print{body{padding:20px}}</style></head><body>
+${generarHTMLCertificado(registros[certActualIndex])}
+</body></html>`);
+  w.document.close();
+  setTimeout(() => w.print(), 500);
+}
+
+// ==================== TABLE RENDERING ====================
+function renderTabla() {
+  const count = registros.length;
+  $$('recordsCount').textContent = `${count} registro${count !== 1 ? 's' : ''}`;
+  $$('btnDownloadAll').disabled = count === 0;
+  $$('btnDeleteAll').disabled = count === 0;
+  
+  if (count === 0) {
+    $$('recordsTable').innerHTML = '<div class="empty-state">📭 No hay registros todavía. Llená el formulario y click en <strong>Guardar Registro</strong>.</div>';
+    return;
+  }
+  
+  const Hparts = (registros[0].H || '').split('-');
+  
+  let html = `<div style="overflow-x:auto"><table>
+    <thead><tr>
+      <th>N°</th><th>Empresa / Persona</th><th>RUC/DNI</th><th>Distrito</th>
+      <th>Fecha</th><th>Ohms</th><th style="text-align:center">Acciones</th>
+    </tr></thead><tbody>`;
+  
+  registros.forEach((r,i) => {
+    const fechaShort = (r.H||'').split('-').reverse().join('/');
+    html += `<tr>
+      <td><strong>${r.A}</strong></td>
+      <td>${r.B}</td>
+      <td>${r.C}</td>
+      <td>${r.F}</td>
+      <td>${fechaShort}</td>
+      <td>${r.Y ? r.Y + ' Ω' : '—'}</td>
+      <td class="actions">
+        <button class="btn btn-primary btn-sm" onclick="verCertificado(${i})" title="Ver certificado">📄</button>
+        <button class="btn btn-success btn-sm" onclick="descargarPDFItem(${i})" title="Descargar PDF">🖨️ PDF</button>
+        <button class="btn btn-secondary btn-sm" onclick="descargarExcelItem(${i})" title="Descargar Excel">📊</button>
+        <button class="btn btn-secondary btn-sm" onclick="editarRegistro(${i})" title="Editar">✏️</button>
+        <button class="btn btn-danger btn-sm" onclick="borrarRegistro(${i})" title="Borrar">🗑️</button>
+      </td>
+    </tr>`;
+  });
+  
+  html += '</tbody></table></div>';
+  $$('recordsTable').innerHTML = html;
+}
+
+// ==================== EXCEL DOWNLOAD ====================
+function exportarRegistroAExcel(registro) {
+  const headers = [
+    'N°','EMPRESA /PERSONA :','RUC /DNI :','GIRO/ACTIVIDAD COMERCIAL :',
+    'UBICACIÓN :','DISTRITO:','PRUEBA','Fecha: Registrar bajo el formato dd/mm/aaaa',
+    'FECHA DE INSPECCION','NUMERO DE CERTIFICADO','EQUIPO','MARCA','MODELO','SERIE',
+    'FINAL SPAT','Número de Pozo','Describir donde "se encuentra ubicado":','Conexión',
+    'Tipo','Dosis','Barra','CABLE','CAJA DE REGISTRO','DIMENSIÓN','Valor Ohms',
+    'N°','Cliente','Titulo'
+  ];
+  
+  const Hparts = (registro.H||'').split('-');
+  const fechaShort = Hparts.length === 3 ? `${Hparts[2]}/${Hparts[1]}/${Hparts[0]}` : registro.H;
+  const fila = [
+    registro.A, registro.B, registro.C, registro.D, registro.E, registro.F, registro.G, fechaShort,
+    fmtFecha(registro.H), generarCertNro(registro.A),
+    registro.K, registro.L, registro.M, registro.N,
+    fmtFechaFin(registro.H), registro.P, registro.Q, registro.R,
+    registro.S, registro.T, registro.U, registro.V, registro.W, registro.X, registro.Y||'',
+    registro.A, registro.B, ''
+  ];
+  
+  const wb = XLSX.utils.book_new();
+  const ws1 = XLSX.utils.aoa_to_sheet([headers, fila]);
+  XLSX.utils.book_append_sheet(wb, ws1, 'BaseDatos');
+  
+  const nombreArchivo = `SPAT_${registro.A}_${(registro.B||'registro').replace(/[^a-zA-Z0-9]/g,'_').substring(0,25)}.xlsx`;
+  XLSX.writeFile(wb, nombreArchivo);
+}
+
+function descargarExcelItem(index) {
+  exportarRegistroAExcel(registros[index]);
+}
+
+function descargarPDFItem(index) {
+  const r = registros[index];
+  const w = window.open('','_blank','width=800,height=900');
+  w.document.write(`<!DOCTYPE html><html><head><meta charset="UTF-8"><title>Certificado SPAT ${r.A}</title>
+<style>body{font-family:'Times New Roman',serif;padding:30px 40px;max-width:750px;margin:0 auto}
+.cert{font-family:'Times New Roman',serif;color:#000;max-width:720px;margin:0 auto}
+.cert-header{text-align:center;margin-bottom:8px}
+.cert-header .eng-name{font-size:13pt;font-weight:bold}
+.cert-header .eng-title{font-size:10pt}
+.cert-header .cip{font-size:10pt;font-weight:bold}
+.cert-project{text-align:right;font-size:9pt;margin-bottom:5px}
+.cert-num{text-align:center;font-size:11pt;font-weight:bold;margin:8px 0}
+.cert-title{text-align:center;font-size:12pt;font-weight:bold;margin:12px 0}
+.cert-intro{text-align:justify;font-size:10pt;margin:10px 0;line-height:1.4}
+.cert-section-title{font-weight:bold;font-size:11pt;margin:14px 0 6px 0}
+.cert-field{margin:2px 0 2px 20px;font-size:10pt}
+.cert-field .flabel{font-weight:bold}
+.cert-vigencia{margin:10px 0;font-size:9pt;text-align:justify}
+table.cert-table{width:100%;border-collapse:collapse;margin:10px 0;font-size:9pt}
+table.cert-table th,table.cert-table td{border:1px solid #000;padding:4px 6px;text-align:center}
+table.cert-table th{background:#f0f0f0;font-size:8pt}
+.cert-report{font-size:10pt;margin:10px 0 4px 20px}
+.cert-footer{margin-top:24px;font-size:8pt;text-align:center;border-top:1px solid #ccc;padding-top:10px}
+.cert-signature{text-align:center;margin-top:30px}
+.cert-signature .line{border-top:1px solid #000;width:250px;margin:0 auto 4px}
+.cert-signature .sig-name{font-weight:bold;font-size:10pt}
+.cert-signature .sig-cip{font-size:9pt}
+.cert-anexo{font-size:8pt;margin-top:16px}
+@media print{body{padding:20px}}
+</style></head><body>
+${generarHTMLCertificado(r)}
+</body></html>`);
+  w.document.close();
+  setTimeout(() => { w.print(); w.close(); }, 600);
+}
+
+function descargarExcelTodo() {
+  if (registros.length === 0) {
+    alert('⚠️ No hay registros para descargar.');
+    return;
+  }
+  
+  const headers = [
+    'N°','EMPRESA /PERSONA :','RUC /DNI :','GIRO/ACTIVIDAD COMERCIAL :',
+    'UBICACIÓN :','DISTRITO:','PRUEBA','Fecha: Registrar bajo el formato dd/mm/aaaa',
+    'FECHA DE INSPECCION','NUMERO DE CERTIFICADO','EQUIPO','MARCA','MODELO','SERIE',
+    'FINAL SPAT','Número de Pozo','Describir donde "se encuentra ubicado":','Conexión',
+    'Tipo','Dosis','Barra','CABLE','CAJA DE REGISTRO','DIMENSIÓN','Valor Ohms',
+    'N°','Cliente','Titulo'
+  ];
+  
+  const filas = registros.map(r => {
+    const Hparts = (r.H||'').split('-');
+    const fechaShort = Hparts.length === 3 ? `${Hparts[2]}/${Hparts[1]}/${Hparts[0]}` : r.H;
+    return [
+      r.A, r.B, r.C, r.D, r.E, r.F, r.G, fechaShort,
+      fmtFecha(r.H), generarCertNro(r.A),
+      r.K, r.L, r.M, r.N,
+      fmtFechaFin(r.H), r.P, r.Q, r.R,
+      r.S, r.T, r.U, r.V, r.W, r.X, r.Y||'',
+      r.A, r.B, ''
+    ];
+  });
+  
+  const wb = XLSX.utils.book_new();
+  const ws1 = XLSX.utils.aoa_to_sheet([headers, ...filas]);
+  XLSX.utils.book_append_sheet(wb, ws1, 'BaseDatos');
+  
+  XLSX.writeFile(wb, `SPAT_${registros.length}_registros.xlsx`);
+}
+
+// ==================== INIT ====================
+document.addEventListener('DOMContentLoaded', () => {
+  cargarRegistros();
+  
+  const today = new Date().toISOString().split('T')[0];
+  if (!$$('fH').value) $$('fH').value = today;
+  
+  $$('fA').value = getCounter();
+  $$('fA').dataset.auto = 'true';
+  actualizarDisplayContador();
+  
+  $$('fA').addEventListener('input', function() { this.dataset.auto = 'false'; });
+  
+  // Close modal on overlay click
+  $$('certModal').addEventListener('click', function(e) {
+    if (e.target === this) cerrarModal();
+  });
+  
+  renderTabla();
+});
+</script>
+</body>
+</html>
