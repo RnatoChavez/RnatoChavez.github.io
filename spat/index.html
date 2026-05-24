@@ -72,9 +72,9 @@ td.actions { white-space:nowrap; text-align:center; }
 .modal-footer { padding:12px 24px; border-top:1px solid var(--border); display:flex; gap:8px; justify-content:flex-end; }
 
 /* Certificate styles */
-.cert { font-family:'Times New Roman',serif; color:#000; max-width:720px; margin:0 auto; }
-.cert-header { text-align:center; margin-bottom:8px; }
-.cert-header .eng-name { font-size:13pt; font-weight:bold; }
+.cert { font-family:'Times New Roman',serif; color:#000; width:190mm; margin:0 auto; padding:10mm 15mm; min-height:267mm; }
+.cert-header { text-align:center; margin-bottom:6px; border-bottom:2px solid #000; padding-bottom:8px; }
+.cert-header .eng-name { font-size:14pt; font-weight:bold; letter-spacing:1px; }
 .cert-header .eng-title { font-size:10pt; }
 .cert-header .cip { font-size:10pt; font-weight:bold; }
 .cert-project { text-align:right; font-size:9pt; margin-bottom:5px; }
@@ -89,18 +89,20 @@ td.actions { white-space:nowrap; text-align:center; }
 .cert-table th,.cert-table td { border:1px solid #000; padding:4px 6px; text-align:center; }
 .cert-table th { background:#f0f0f0; font-size:8pt; }
 .cert-report { font-size:10pt; margin:10px 0 4px 20px; }
-.cert-footer { margin-top:24px; font-size:8pt; text-align:center; border-top:1px solid #ccc; padding-top:10px; }
-.cert-signature { text-align:center; margin-top:30px; }
+.cert-footer { margin-top:20px; font-size:8pt; text-align:center; border-top:1px solid #000; padding-top:8px; }
+.cert-signature { text-align:center; margin-top:25px; }
 .cert-signature .line { border-top:1px solid #000; width:250px; margin:0 auto 4px; }
 .cert-signature .sig-name { font-weight:bold; font-size:10pt; }
 .cert-signature .sig-cip { font-size:9pt; }
 .cert-anexo { font-size:8pt; margin-top:16px; }
 
 @media print {
+  @page { size: A4; margin: 15mm; }
   body { background:#fff; padding:0; }
   .container { max-width:100%; }
   .header,.card:not(.print-card),.btn-row,.records-header,table:not(.cert-table),.modal-overlay { display:none!important; }
   .print-card { border:none; padding:0; margin:0; box-shadow:none; }
+  .cert { width:auto; padding:0; min-height:auto; }
 }
 
 @media (max-width:768px) {
@@ -601,12 +603,14 @@ function descargarExcelItem(index) {
 
 function descargarPDFItem(index) {
   const r = registros[index];
-  const w = window.open('','_blank','width=800,height=900');
+  const w = window.open('','_blank','width=900,height=1000');
   w.document.write(`<!DOCTYPE html><html><head><meta charset="UTF-8"><title>Certificado SPAT ${r.A}</title>
-<style>body{font-family:'Times New Roman',serif;padding:30px 40px;max-width:750px;margin:0 auto}
-.cert{font-family:'Times New Roman',serif;color:#000;max-width:720px;margin:0 auto}
-.cert-header{text-align:center;margin-bottom:8px}
-.cert-header .eng-name{font-size:13pt;font-weight:bold}
+<style>
+@page { size: A4; margin: 15mm; }
+body{font-family:'Times New Roman',serif;padding:10mm 15mm;max-width:210mm;margin:0 auto}
+.cert{font-family:'Times New Roman',serif;color:#000}
+.cert-header{text-align:center;margin-bottom:6px;border-bottom:2px solid #000;padding-bottom:8px}
+.cert-header .eng-name{font-size:14pt;font-weight:bold;letter-spacing:1px}
 .cert-header .eng-title{font-size:10pt}
 .cert-header .cip{font-size:10pt;font-weight:bold}
 .cert-project{text-align:right;font-size:9pt;margin-bottom:5px}
@@ -621,13 +625,13 @@ table.cert-table{width:100%;border-collapse:collapse;margin:10px 0;font-size:9pt
 table.cert-table th,table.cert-table td{border:1px solid #000;padding:4px 6px;text-align:center}
 table.cert-table th{background:#f0f0f0;font-size:8pt}
 .cert-report{font-size:10pt;margin:10px 0 4px 20px}
-.cert-footer{margin-top:24px;font-size:8pt;text-align:center;border-top:1px solid #ccc;padding-top:10px}
-.cert-signature{text-align:center;margin-top:30px}
+.cert-footer{margin-top:20px;font-size:8pt;text-align:center;border-top:1px solid #000;padding-top:8px}
+.cert-signature{text-align:center;margin-top:25px}
 .cert-signature .line{border-top:1px solid #000;width:250px;margin:0 auto 4px}
 .cert-signature .sig-name{font-weight:bold;font-size:10pt}
 .cert-signature .sig-cip{font-size:9pt}
 .cert-anexo{font-size:8pt;margin-top:16px}
-@media print{body{padding:20px}}
+@media print{body{padding:15mm}}
 </style></head><body>
 ${generarHTMLCertificado(r)}
 </body></html>`);
