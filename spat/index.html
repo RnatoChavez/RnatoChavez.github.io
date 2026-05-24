@@ -167,11 +167,21 @@ td.actions { white-space:nowrap; text-align:center; }
         </select>
       </div>
       <div class="form-group">
-        <label>Prueba Realizada</label>
-        <input type="text" id="fG" value="CNE-U 060-712">
+        <label>Valor Ohms (Ω)</label>
+        <input type="number" id="fY" value="5.6" step="0.01" min="0">
+      </div>
+      <div class="form-group">
+        <label>Ubicación del SPAT</label>
+        <input type="text" id="fQ" value="En el interior del inmueble">
+      </div>
+      <div class="form-group">
+        <label>Tipo de SPAT</label>
+        <select id="fS">
+          <option>Vertical</option><option>Horizontal</option>
+        </select>
       </div>
       <div class="form-group full">
-        <label>Ubicación</label>
+        <label>Ubicación del Establecimiento</label>
         <textarea id="fE" placeholder="Dirección completa del establecimiento"></textarea>
       </div>
     </div>
@@ -186,14 +196,11 @@ td.actions { white-space:nowrap; text-align:center; }
       <div class="form-group"><label>Serie</label><input type="text" id="fN" value="21125302497"></div>
       <div class="form-group"><label>Número de Pozo</label><input type="text" id="fP" value="SPAT 1 de 1"></div>
       <div class="form-group"><label>Conexión</label><select id="fR"><option>Al tablero general</option><option>Al tablero eléctrico</option></select></div>
-      <div class="form-group"><label>Tipo de Pozo</label><select id="fS"><option>Vertical</option><option>Horizontal</option></select></div>
       <div class="form-group"><label>Dosis</label><input type="text" id="fT" value="Thorgel"></div>
       <div class="form-group"><label>Barra de Cobre</label><input type="text" id="fU" value='L=2,4 m y ø 3/4" de Cu'></div>
       <div class="form-group"><label>Cable</label><select id="fV"><option>10 mm²</option><option>4 mm²</option><option>2.5 mm²</option></select></div>
       <div class="form-group"><label>Caja de Registro</label><select id="fW"><option>concreto</option><option>polipropileno</option></select></div>
       <div class="form-group"><label>Dimensión Caja</label><input type="text" id="fX" value="0.40x0.40 m"></div>
-      <div class="form-group"><label>Ubicación del Pozo</label><input type="text" id="fQ" value="Al interior del local, en el 1er nivel"></div>
-      <div class="form-group"><label>Valor Ohms (Ω)</label><input type="number" id="fY" placeholder="Ej: 9.1" step="0.01" min="0"></div>
     </div>
 
     <div class="btn-row">
@@ -307,14 +314,15 @@ function cumpleOhms(valor) {
 function leerFormData() {
   return {
     A: val('fA'), B: val('fB'), C: val('fC'), D: val('fD'),
-    E: val('fE'), F: val('fF'), G: val('fG'), H: val('fH'),
+    E: val('fE'), F: val('fF'), G: 'CNE-U 060-712', H: val('fH'),
+    Y: val('fY')||'5.6', Q: val('fQ')||'En el interior del inmueble',
+    S: val('fS')||'Vertical',
     K: val('fK')||'TELUROMETRO', L: val('fL')||'SANWA', M: val('fM')||'PDR4000',
     N: val('fN')||'21125302497', P: val('fP')||'SPAT 1 de 1',
-    Q: val('fQ')||'Al interior del local, en el 1er nivel',
-    R: val('fR')||'Al tablero general', S: val('fS')||'Vertical',
+    R: val('fR')||'Al tablero general',
     T: val('fT')||'Thorgel', U: val('fU')||'L=2,4 m y ø 3/4" de Cu',
     V: val('fV')||'10 mm²', W: val('fW')||'concreto',
-    X: val('fX')||'0.40x0.40 m', Y: val('fY')||''
+    X: val('fX')||'0.40x0.40 m'
   };
 }
 
@@ -329,8 +337,10 @@ function llenarForm(data) {
 }
 
 function limpiarForm() {
-  ['fB','fC','fD','fE','fF','fH','fY'].forEach(id => $$(id).value = '');
-  $$('fG').value = 'CNE-U 060-712';
+  ['fB','fC','fD','fE','fF','fH'].forEach(id => $$(id).value = '');
+  $$('fY').value = '5.6';
+  $$('fQ').value = 'En el interior del inmueble';
+  $$('fS').value = 'Vertical';
   $$('fA').value = getCounter();
   $$('fA').dataset.auto = 'true';
   editandoIndex = -1;
@@ -354,8 +364,8 @@ function toggleTech() {
 function guardarRegistro() {
   const data = leerFormData();
   
-  if (!data.A || !data.B || !data.C || !data.D || !data.E || !data.F || !data.G || !data.H) {
-    alert('⚠️ Complete todos los campos del solicitante (N°, Empresa, RUC/DNI, Giro, Ubicación, Distrito, Prueba y Fecha).');
+  if (!data.A || !data.B || !data.C || !data.D || !data.E || !data.F || !data.H || !data.Y || !data.Q) {
+    alert('⚠️ Complete todos los campos (N°, Empresa, RUC/DNI, Giro, Ubicación, Distrito, Fecha, Ohms y Ubicación del SPAT).');
     return;
   }
   
@@ -528,7 +538,7 @@ function renderTabla() {
   let html = `<div style="overflow-x:auto"><table>
     <thead><tr>
       <th>N°</th><th>Empresa / Persona</th><th>RUC/DNI</th><th>Distrito</th>
-      <th>Fecha</th><th>Ohms</th><th style="text-align:center">Acciones</th>
+      <th>Fecha</th><th>Ohms</th><th>Tipo SPAT</th><th style="text-align:center">Acciones</th>
     </tr></thead><tbody>`;
   
   registros.forEach((r,i) => {
@@ -540,6 +550,7 @@ function renderTabla() {
       <td>${r.F}</td>
       <td>${fechaShort}</td>
       <td>${r.Y ? r.Y + ' Ω' : '—'}</td>
+      <td>${r.S || 'Vertical'}</td>
       <td class="actions">
         <button class="btn btn-primary btn-sm" onclick="verCertificado(${i})" title="Ver certificado">📄</button>
         <button class="btn btn-success btn-sm" onclick="descargarPDFItem(${i})" title="Descargar PDF">🖨️ PDF</button>
