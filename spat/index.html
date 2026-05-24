@@ -203,6 +203,10 @@ td.actions { white-space:nowrap; text-align:center; }
       <div class="form-group"><label>Cable</label><select id="fV"><option>10 mm²</option><option>4 mm²</option><option>2.5 mm²</option></select></div>
       <div class="form-group"><label>Caja de Registro</label><select id="fW"><option>concreto</option><option>polipropileno</option></select></div>
       <div class="form-group"><label>Dimensión Caja</label><input type="text" id="fX" value="0.40x0.40 m"></div>
+      <div class="form-group full">
+        <label>🖼️ Imagen del Certificado de Habilidad (URL) — aparece en página 2 del PDF</label>
+        <input type="text" id="fImgHabilidad" placeholder="https://... o pegar URL de Google Drive">
+      </div>
     </div>
 
     <div class="btn-row">
@@ -245,6 +249,7 @@ td.actions { white-space:nowrap; text-align:center; }
 <script>
 // ==================== STORAGE ====================
 const STORE_KEY = '***';
+const IMAGEN_KEY = '***';
 let registros = [];
 let editandoIndex = -1;
 
@@ -258,6 +263,14 @@ function cargarRegistros() {
 function guardarRegistros() {
   localStorage.setItem(STORE_KEY, JSON.stringify(registros));
   renderTabla();
+}
+
+function cargarImagenHabilidad() {
+  return localStorage.getItem(IMAGEN_KEY) || '';
+}
+
+function guardarImagenHabilidad(url) {
+  localStorage.setItem(IMAGEN_KEY, url);
 }
 
 // ==================== COUNTER ====================
@@ -428,6 +441,7 @@ function generarHTMLCertificado(data) {
   const certNum = generarCertNro(data.A);
   const ohmsDisplay = data.Y ? `${data.Y} Ω` : '—';
   const cumple = cumpleOhms(data.Y);
+  const IMAGEN_HABILIDAD = cargarImagenHabilidad();
   
   return `
 <div class="cert">
@@ -494,6 +508,12 @@ function generarHTMLCertificado(data) {
   
   <div class="cert-anexo">
     Anexo 01: Certificado de Habilidad Profesional como Ingeniero Mecánico Electricista: Habilitado y Colegiado
+  </div>
+  
+  <div style="page-break-before:always"></div>
+  <div style="text-align:center;margin-top:10mm">
+    <div style="font-family:'Times New Roman',serif;font-size:11pt;font-weight:bold;margin-bottom:10mm">ANEXO 01<br>CERTIFICADO DE HABILIDAD PROFESIONAL</div>
+    <img src="${IMAGEN_HABILIDAD}" style="max-width:170mm;width:100%;" alt="Certificado de Habilidad Profesional">
   </div>
 </div>`;
 }
@@ -684,6 +704,15 @@ document.addEventListener('DOMContentLoaded', () => {
   $$('fA').value = getCounter();
   $$('fA').dataset.auto = 'true';
   actualizarDisplayContador();
+  
+  // Cargar imagen de habilidad
+  const imgUrl = cargarImagenHabilidad();
+  if (imgUrl) $$('fImgHabilidad').value = imgUrl;
+  
+  // Guardar imagen al cambiar
+  $$('fImgHabilidad').addEventListener('input', function() {
+    guardarImagenHabilidad(this.value.trim());
+  });
   
   $$('fA').addEventListener('input', function() { this.dataset.auto = 'false'; });
   
